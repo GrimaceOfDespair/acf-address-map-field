@@ -6,6 +6,10 @@
 		$el: null,
 		$input: null,
 		o: {},
+		api: {
+			sensor:		false,
+			libraries:	'places'
+		},
 		ready: false,
 		geocoder: false,
 		map: false,
@@ -93,7 +97,7 @@
 					},
 					format: function() {
 						var output = {}
-						output.address_line_1 = [this.data.number, this.data.street].join(' ')
+						output.address_line_1 = [this.data.street, this.data.number].join(' ')
 						output.address_line_2 = this.data.unit || '';
 						output.city = this.data.city || '';
 						output.state = this.data.state || '';
@@ -143,7 +147,7 @@
 				
 				if($el.find('.address_one').val() !== ''){
 					
-					if(confirm('Changes to address information with be overwritten with data from Google Maps')){
+					if(confirm(acf.l10n.address_map.confirm_overwrite)){
 						update_fields();
 						
 						$el.find('.search').blur();
@@ -367,6 +371,7 @@
 	 */
 	$(document).on('acf/setup_fields', function(e, el) {
 		// vars
+    var self = acf.fields.address_map;
 		$fields = $(el).find('.acf-address-map');
 		// validate
 		if (!$fields.exists()) {
@@ -376,7 +381,7 @@
 		if (typeof google === 'undefined') {
 			$.getScript('https://www.google.com/jsapi', function() {
 				google.load('maps', '3', {
-					other_params: 'sensor=false&libraries=places',
+					other_params: $.param(self.api),
 					callback: function() {
 						$fields.each(function() {
 							acf.fields.address_map.set({
@@ -388,7 +393,7 @@
 			});
 		} else {
 			google.load('maps', '3', {
-				other_params: 'sensor=false&libraries=places',
+				other_params: $.param(self.api),
 				callback: function() {
 					$fields.each(function() {
 						acf.fields.address_map.set({

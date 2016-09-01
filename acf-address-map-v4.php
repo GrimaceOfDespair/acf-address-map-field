@@ -21,23 +21,24 @@ class acf_field_address_map extends acf_field {
 		// vars
 		$this->name = 'address_map';
 		$this->label = __('Address Map');
-		$this->category = __("jQuery",'acf'); // Basic, Content, Choice, etc
+		$this->category = __("jQuery",'acf-address-map'); // Basic, Content, Choice, etc
 		$this->default_values = array(
 			'center_lat'	=> '47.6256211',
 			'center_lng'	=> '-122.3529964',
 			'zoom'			=> '14'
 		);
 		$this->l10n = array(
-			'locating'			=>	__("Locating",'acf'),
-			'browser_support'	=>	__("Sorry, this browser does not support geolocation",'acf'),
+			'locating'			=>	__("Locating",'acf-address-map'),
+			'browser_support'	=>	__("Sorry, this browser does not support geolocation",'acf-address-map'),
+			'confirm_overwrite' => __("Overwrite current data with data from Google Maps?",'acf-address-map')
 		);
 		
 		
 		// do not delete!
-    	parent::__construct();
-    	
-    	
-    	// settings
+		parent::__construct();
+		
+		
+		// settings
 		$this->settings = array(
 			'path' => apply_filters('acf/helpers/get_path', __FILE__),
 			'dir' => apply_filters('acf/helpers/get_dir', __FILE__),
@@ -68,7 +69,6 @@ class acf_field_address_map extends acf_field {
 		wp_register_script( 'acf-input-address_map', $this->settings['dir'] . 'js/input.v4.js', array('acf-input'), $this->settings['version'] );
 		wp_register_style( 'acf-input-address_map', $this->settings['dir'] . 'css/input.v4.css', array('acf-input'), $this->settings['version'] ); 
 		
-		
 		// scripts
 		wp_enqueue_script(array(
 			'acf-input-address_map',	
@@ -79,10 +79,33 @@ class acf_field_address_map extends acf_field {
 			'acf-input-address_map',	
 		));
 		
+	}
+	
+	function input_admin_head() {
+		
+		add_action( 'admin_footer', array( $this, 'input_admin_footer') );
 		
 	}
 	
-	
+	function input_admin_footer() {
+		
+		// filter
+		$api = apply_filters('acf/fields/address_map/api', array(
+			'libraries'		=> 'places',
+			'key'			=> '',
+			'client'		=> ''
+		));
+		
+		// remove empty
+		if( empty($api['key']) ) unset($api['key']);
+		if( empty($api['client']) ) unset($api['client']);
+		
+		?>
+			<script type="text/javascript">
+			acf.fields.address_map.api = <?php echo json_encode($api); ?>;
+			</script>
+		<?php
+	}
 	
 	/*
 	*  create_field()
@@ -177,13 +200,13 @@ class acf_field_address_map extends acf_field {
 			<div class="title">
 				
 				<div class="has-value">
-					<a href="#" class="acf-sprite-remove ir" title="<?php _e("Clear location",'acf'); ?>">Remove</a>
+					<a href="#" class="acf-sprite-remove ir" title="<?php _e("Clear location",'acf-address-map'); ?>">Remove</a>
 					<h4><?php echo $field['value']['map_name']; ?></h4>
 				</div>
 				
 				<div class="no-value">
-					<a href="#" class="acf-sprite-locate ir" title="<?php _e("Find current location",'acf'); ?>">Locate</a>
-					<input type="text" name="<?php echo $field['name'] ?>[map_name]" placeholder="<?php _e("Search for address...",'acf'); ?>" class="search" value="<?php echo $this->cond_display_value($field, ['name']); ?>"/>
+					<a href="#" class="acf-sprite-locate ir" title="<?php _e("Find current location",'acf-address-map'); ?>">Locate</a>
+					<input type="text" name="<?php echo $field['name'] ?>[map_name]" placeholder="<?php _e("Search for address...",'acf-address-map'); ?>" class="search" value="<?php echo $this->cond_display_value($field, ['name']); ?>"/>
 				</div>
 				
 			</div>
@@ -193,57 +216,57 @@ class acf_field_address_map extends acf_field {
 				<table >				
 				<tbody>
 				<tr class="name">
-					<td>Business Name</td>
+					<td><?php _e('Business Name','acf-address-map') ?></td>
 					<td><input class="business_name" name="<?php echo esc_attr($field['name']); ?>[name]" type="text" value="<?php echo $this->cond_display_value($field, ['name']); ?>"></td>
 				</tr>
 				
 				<tr class="phone">
-					<td>Phone</td>
+					<td><?php _e('Phone','acf-address-map') ?></td>
 					<td><input class="phone" name="<?php echo esc_attr($field['name']); ?>[info][phone]" type="text" value="<?php echo $this->cond_display_value($field, ['info', 'phone']); ?>"></td>
 				</tr>
 				
 				<tr class="website">
-					<td>Website</td>
+					<td><?php _e('Website','acf-address-map') ?></td>
 					<td><input class="website" name="<?php echo esc_attr($field['name']); ?>[info][website]" type="url" value="<?php echo $this->cond_display_value($field, ['info', 'website']); ?>"></td>
 				</tr>
 				
 				<tr class="email">
-					<td>Email</td>
+					<td><?php _e('Email','acf-address-map') ?></td>
 					<td><input class="email" name="<?php echo esc_attr($field['name']); ?>[info][email]" type="email" value="<?php echo $this->cond_display_value($field, ['info', 'email']); ?>"></td>
 				</tr>
 				
 				<tr class="address_line address_1">
-					<td>Address Line 1</td>
+					<td><?php _e('Address Line 1','acf-address-map') ?></td>
 					<td><input class="address_one" name="<?php echo esc_attr($field['name']); ?>[address][line_1]" type="text" value="<?php echo $this->cond_display_value($field, ['address', 'line_1']); ?>"></td>
 				</tr>
 				
 				<tr class="address_line address_two">
-					<td>Address Line 2</td>
+					<td><?php _e('Address Line 2','acf-address-map') ?></td>
 					<td><input class="address_two" name="<?php echo esc_attr($field['name']); ?>[address][line_2]" type="text" value="<?php echo $this->cond_display_value($field, ['address', 'line_2']); ?>"></td>
 				</tr>
 				
 				<tr class="city">
-					<td>City</td>
+					<td><?php _e('City','acf-address-map') ?></td>
 					<td><input class="city" name="<?php echo esc_attr($field['name']); ?>[address][city]" type="text" value="<?php echo $this->cond_display_value($field, ['address', 'city']); ?>"></td>
 				</tr>
 				
 				<tr class="state">
-					<td>State</td>
+					<td><?php _e('State','acf-address-map') ?></td>
 					<td><input class="state" name="<?php echo esc_attr($field['name']); ?>[address][state]" type="text" value="<?php echo $this->cond_display_value($field, ['address', 'state']); ?>"></td>
 				</tr>
 				
 				<tr class="zip">
-					<td>Zip</td>
+					<td><?php _e('Zip','acf-address-map') ?></td>
 					<td><input class="zip" name="<?php echo esc_attr($field['name']); ?>[address][zip]" type="text" value="<?php echo $this->cond_display_value($field, ['address', 'zip']); ?>"></td>
 				</tr>
 				
 				<tr class="country">
-					<td>Country</td>
+					<td><?php _e('Country','acf-address-map') ?></td>
 					<td><input class="country" name="<?php echo esc_attr($field['name']); ?>[address][country]" type="text" value="<?php echo $this->cond_display_value($field, ['address', 'country']); ?>"></td>
 				</tr>
 				
 				<tr class="location">
-					<td>Location</td>
+					<td><?php _e('Location','acf-address-map') ?></td>
 					<td>
 						<input name="<?php echo esc_attr($field['name']); ?>[lat]" class="latitude" type="text" value="<?php echo $this->cond_display_value($field, ['lat']); ?>">
 						<input name="<?php echo esc_attr($field['name']); ?>[lng]" class="longitude" type="text" value="<?php echo $this->cond_display_value($field, ['lng']); ?>">
@@ -251,7 +274,7 @@ class acf_field_address_map extends acf_field {
 				</tr>
 				
 				<tr class="google-map">
-					<td>Google Map URL</td>
+					<td><?php _e('Google Map URL','acf-address-map') ?></td>
 					<td><input class="google-map" name="<?php echo esc_attr($field['name']); ?>[info][google_map]" type="text" value="<?php echo $this->cond_display_value($field, ['info', 'google_map']); ?>"></td>
 				</tr>
 				
@@ -286,6 +309,9 @@ class acf_field_address_map extends acf_field {
 			$next = $value;
 			
 			foreach($ref as $p){
+				if (!isset($next[$p])) {
+					return '';
+				}
 				$next = $next[$p];
 			}
 			
@@ -319,8 +345,8 @@ class acf_field_address_map extends acf_field {
 		?>
 <tr class="field_option field_option_<?php echo $this->name; ?>">
 	<td class="label">
-		<label><?php _e("Center",'acf'); ?></label>
-		<p class="description"><?php _e('Center the initial map','acf'); ?></p>
+		<label><?php _e("Center",'acf-address-map'); ?></label>
+		<p class="description"><?php _e('Center the initial map','acf-address-map'); ?></p>
 	</td>
 	<td>
 		<ul class="hl clearfix">
@@ -356,8 +382,8 @@ class acf_field_address_map extends acf_field {
 </tr>
 <tr class="field_option field_option_<?php echo $this->name; ?>">
 	<td class="label">
-		<label><?php _e("Zoom",'acf'); ?></label>
-		<p class="description"><?php _e('Set the initial zoom level','acf'); ?></p>
+		<label><?php _e("Zoom",'acf-address-map'); ?></label>
+		<p class="description"><?php _e('Set the initial zoom level','acf-address-map'); ?></p>
 	</td>
 	<td>
 		<?php 
